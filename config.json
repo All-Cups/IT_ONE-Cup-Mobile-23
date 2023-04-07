@@ -1,0 +1,17 @@
+{
+    "time_to_run": 300,
+    "reverse_cost": 40,
+    "double_cost": 50,
+    "double_uses": 5,
+    "slow_cost": 40,
+    "slow_uses": 10,
+    "shuffle_cost": 10,
+    "min_cost": 10,
+    "min_uses": 3,
+    "min_value": 1,
+    "max_value": 10,
+    "min_delay_secs": 0.1,
+    "max_delay_secs": 3,
+    "pipe_count": 3,
+    "pipe_value_delay_secs": 1
+}

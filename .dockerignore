@@ -1,0 +1,6 @@
+*
+
+!/src/
+!/Cargo.toml
+!/frontend/
+!/config.json
