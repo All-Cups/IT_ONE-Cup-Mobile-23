@@ -82,12 +82,44 @@ for (let i = 0; i < clientIds.length; i++) {
     playerNames.set(clientIds[i], clientNames[i]);
 }
 
+// Line by line reader from
+// https://developer.mozilla.org/en-US/docs/Web/API/ReadableStreamDefaultReader/read
+async function* makeTextFileLineIterator(fileURL: string) {
+    const utf8Decoder = new TextDecoder("utf-8");
+    let response = await fetch(fileURL);
+    let reader = response.body!.getReader();
+    let { value: chunkData, done: readerDone } = await reader.read();
+    let chunk = chunkData ? utf8Decoder.decode(chunkData, { stream: true }) : "";
+
+    let re = /\r\n|\n|\r/gm;
+    let startIndex = 0;
+
+    for (; ;) {
+        let result = re.exec(chunk);
+        if (!result) {
+            if (readerDone) {
+                break;
+            }
+            let remainder = chunk.substr(startIndex);
+            ({ value: chunkData, done: readerDone } = await reader.read());
+            chunk =
+                remainder + (chunkData ? utf8Decoder.decode(chunkData, { stream: true }) : "");
+            startIndex = re.lastIndex = 0;
+            continue;
+        }
+        yield chunk.substring(startIndex, result.index);
+        startIndex = re.lastIndex;
+    }
+    if (startIndex < chunk.length) {
+        // last line didn't end in a newline char
+        yield chunk.substring(startIndex);
+    }
+}
+
 const replayUrl = params.get("replay");
 if (replayUrl) {
     async function loadReplay() {
-        let resp = await fetch(replayUrl!);
-        let text = await resp.text();
-        for (let line of text.split('\n')) {
+        for await (let line of makeTextFileLineIterator(replayUrl!)) {
             let json = line.trim();
             if (json.length != 0) {
                 appendLogEntry(JSON.parse(json));
