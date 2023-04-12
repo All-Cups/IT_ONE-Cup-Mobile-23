@@ -11,9 +11,24 @@ let playersGraph = new Chart(document.querySelector<HTMLCanvasElement>("#players
         scales: {
             x: {
                 type: 'linear',
-                position: 'bottom'
+                position: 'bottom',
+                grid: {
+                    color: "#555"
+                }
+            },
+            y: {
+                grid: {
+                    color: "#555"
+                }
             }
         },
+        plugins: {
+            legend: {
+                labels: {
+                    color: "white"
+                }
+            }
+        }
     }
 });
 
