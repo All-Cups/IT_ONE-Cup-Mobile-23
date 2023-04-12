@@ -7,6 +7,7 @@ let playersGraph = new Chart(document.querySelector<HTMLCanvasElement>("#players
         datasets: []
     },
     options: {
+        animation: false,
         scales: {
             x: {
                 type: 'linear',
@@ -68,7 +69,6 @@ function appendLogEntry(data: LogEntry) {
                 }
             }
             playerGraph.data.push({ x: time, y: msg.score });
-            playersGraph.update();
             break;
     }
 }
@@ -119,12 +119,19 @@ async function* makeTextFileLineIterator(fileURL: string) {
 const replayUrl = params.get("replay");
 if (replayUrl) {
     async function loadReplay() {
+        const LINES_PER_CYCLE = 50;
+        let lines_processed = 0;
         for await (let line of makeTextFileLineIterator(replayUrl!)) {
             let json = line.trim();
             if (json.length != 0) {
                 appendLogEntry(JSON.parse(json));
             }
+            lines_processed++;
+            if (lines_processed % LINES_PER_CYCLE == 0) {
+                await new Promise(resolve => setTimeout(resolve));
+            }
         }
+        playersGraph.update();
     }
     loadReplay();
 } else {
@@ -147,5 +154,6 @@ if (replayUrl) {
     let ws = new WebSocket(ws_url());
     ws.onmessage = (message) => {
         appendLogEntry(JSON.parse(message.data));
+        playersGraph.update();
     };
 }
